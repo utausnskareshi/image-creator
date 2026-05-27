@@ -1,0 +1,71 @@
+[package]
+name = "image-creator"
+version = "1.0.0"
+description = "Offline AI image generation client for Windows (Anima + ComfyUI)"
+authors = ["ImageCreator contributors"]
+edition = "2021"
+rust-version = "1.77.2"
+
+# Tauri 推奨のライブラリ構成
+# main.rs から lib.rs の run() を呼び出す形式
+[lib]
+name = "image_creator_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-shell = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# 空きディスク容量の取得（クロスプラットフォーム）
+fs4 = "0.13"
+# ログ出力（簡易）
+log = "0.4"
+# エラーハンドリング
+thiserror = "2"
+# 非同期ランタイム（Tauri が tokio を使っているため整合）
+tokio = { version = "1", features = ["process", "io-util", "macros", "fs", "sync"] }
+# HTTP クライアント（ファイルダウンロード）
+# rustls-tls を使うことで OpenSSL 依存を回避（Windows 配布のため）
+reqwest = { version = "0.12", default-features = false, features = ["stream", "rustls-tls", "gzip", "http2", "json"] }
+# SHA256 検証
+sha2 = "0.10"
+# 16進数文字列変換（SHA256 結果用）
+hex = "0.4"
+# 非同期 Stream の追加メソッド（reqwest stream を扱うため）
+futures-util = "0.3"
+# 7z アーカイブ展開（ComfyUI portable）
+sevenz-rust2 = "0.18"
+# zip アーカイブ展開（llama.cpp release）
+zip = { version = "2.2", default-features = false, features = ["deflate"] }
+# UUID（ComfyUI client_id 生成）
+uuid = { version = "1", features = ["v4"] }
+# Base64（生成画像のフロント送信用）
+base64 = "0.22"
+# SQLite（ギャラリー履歴。bundled で SQLite C も同梱）
+rusqlite = { version = "0.32", features = ["bundled"] }
+# 画像処理（リサイズ → サムネイル JPEG 化）
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
+# PNG メタデータ挿入用の CRC32（tEXt チャンク CRC 計算）
+crc32fast = "1.4"
+# タイムスタンプ
+chrono = { version = "0.4", default-features = false, features = ["serde", "clock"] }
+# ロガー（ファイル出力）
+simplelog = { version = "0.12", default-features = false }
+
+# Windows レジストリへのデータフォルダパス記録（アンインストーラ二重化用フォールバック）
+[target.'cfg(windows)'.dependencies]
+winreg = "0.55"
+
+# リリースビルドの最適化（バイナリサイズ削減）
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true

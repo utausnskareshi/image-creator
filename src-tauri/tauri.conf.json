@@ -1,0 +1,58 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "ImageCreator",
+  "version": "1.0.0",
+  "identifier": "com.imagecreator.desktop",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devUrl": "http://localhost:1420",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "ImageCreator",
+        "width": 1280,
+        "height": 800,
+        "minWidth": 1024,
+        "minHeight": 700,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true,
+        "decorations": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self' ipc: http://ipc.localhost; img-src 'self' data: blob: asset: http://asset.localhost https://asset.localhost; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' ipc: http://ipc.localhost http://127.0.0.1:8188 ws://127.0.0.1:8188 http://127.0.0.1:8189"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "shortDescription": "オフライン画像生成AIクライアント",
+    "longDescription": "Animaなどの画像生成AIモデルを使ってオフラインで画像を生成するWindows向けクライアントアプリ",
+    "publisher": "ImageCreator contributors",
+    "copyright": "Copyright (c) 2026 ImageCreator contributors",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico"
+    ],
+    "resources": ["../resources/**/*"],
+    "windows": {
+      "webviewInstallMode": {
+        "type": "embedBootstrapper"
+      },
+      "nsis": {
+        "languages": ["Japanese", "English"],
+        "displayLanguageSelector": false,
+        "installerHooks": "nsis/hooks.nsi",
+        "compression": "lzma",
+        "installMode": "perMachine"
+      }
+    }
+  }
+}

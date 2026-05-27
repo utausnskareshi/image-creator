@@ -1,0 +1,37 @@
+# デフォルトはテキストとして扱い、改行を自動正規化（LF を採用）
+* text=auto eol=lf
+
+# Windows 専用ファイルは CRLF を維持
+*.cmd       text eol=crlf
+*.bat       text eol=crlf
+*.ps1       text eol=crlf
+*.psm1      text eol=crlf
+*.ps1xml    text eol=crlf
+*.iss       text eol=crlf
+*.nsi       text eol=crlf
+*.nsh       text eol=crlf
+
+# バイナリ（diff 不要 / 改行変換しない）
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.webp      binary
+*.ico       binary
+*.icns      binary
+*.pdf       binary
+*.zip       binary
+*.7z        binary
+*.gz        binary
+*.tar       binary
+*.exe       binary
+*.dll       binary
+*.so        binary
+*.dylib     binary
+*.safetensors binary
+*.gguf      binary
+*.bin       binary
+*.ckpt      binary
+*.pt        binary
+*.pth       binary
+*.onnx      binary

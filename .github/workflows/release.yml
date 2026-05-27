@@ -1,0 +1,147 @@
+name: Release
+
+# 動作:
+#   - タグ `v*.*.*` をプッシュすると Windows でアプリと NSIS インストーラをビルドし、
+#     ドラフトの GitHub Release を作成してインストーラを添付する。
+#   - 手動実行（workflow_dispatch）でも任意のタグ名を指定して実行可能。
+# 公開（Publish）はメンテナが GitHub UI 上で手動で行う前提（誤公開防止）。
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (例: v0.1.0)'
+        required: true
+
+permissions:
+  contents: write  # Release 作成・アセットアップロードのため
+
+jobs:
+  build-and-release:
+    name: Build & Draft Release (Windows)
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Cache Cargo build artifacts
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build Tauri app (NSIS installer)
+        run: npm run tauri:build
+
+      - name: Resolve tag name & version
+        id: tag
+        shell: pwsh
+        run: |
+          $tag = if ($env:GITHUB_REF -like 'refs/tags/*') {
+            $env:GITHUB_REF.Substring('refs/tags/'.Length)
+          } else {
+            '${{ github.event.inputs.tag }}'
+          }
+          if (-not $tag) { Write-Error 'Tag not resolved'; exit 1 }
+          $version = $tag.TrimStart('v')
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          "version=$version" >> $env:GITHUB_OUTPUT
+          Write-Host "Resolved tag=$tag version=$version"
+
+      - name: Locate NSIS installer
+        id: installer
+        shell: pwsh
+        run: |
+          $bundleDir = 'src-tauri/target/release/bundle/nsis'
+          if (-not (Test-Path $bundleDir)) {
+            Write-Error "Bundle directory not found: $bundleDir"
+            exit 1
+          }
+          $installer = Get-ChildItem -Path $bundleDir -Filter '*-setup.exe' -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $installer) {
+            # Fallback: any .exe
+            $installer = Get-ChildItem -Path $bundleDir -Filter '*.exe' | Select-Object -First 1
+          }
+          if (-not $installer) {
+            Write-Error 'NSIS installer (.exe) not found.'
+            exit 1
+          }
+          "path=$($installer.FullName)" >> $env:GITHUB_OUTPUT
+          "name=$($installer.Name)" >> $env:GITHUB_OUTPUT
+          Write-Host "Installer: $($installer.FullName)"
+
+      - name: Compute SHA256 of installer
+        id: hash
+        shell: pwsh
+        run: |
+          $hash = (Get-FileHash -Algorithm SHA256 '${{ steps.installer.outputs.path }}').Hash.ToLower()
+          "sha256=$hash" >> $env:GITHUB_OUTPUT
+          Write-Host "SHA256: $hash"
+
+      - name: Create GitHub Release (draft)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: ImageCreator ${{ steps.tag.outputs.tag }}
+          draft: true
+          prerelease: false
+          generate_release_notes: true
+          body: |
+            # ImageCreator ${{ steps.tag.outputs.tag }}
+
+            オフラインで動作する画像生成AIクライアント（Windows / NVIDIA GPU）。
+
+            ## 📥 インストール手順
+            1. 下記のアセットから `${{ steps.installer.outputs.name }}` をダウンロード
+            2. ダブルクリックで実行
+            3. SmartScreen の警告が出た場合は「**詳細情報**」→「**実行**」をクリック
+               （現在コード署名なしで配布しているため発生します）
+            4. 案内に従ってインストール
+            5. 起動後、セットアップウィザードで必要ファイル（合計 約 10 GB）をダウンロード
+
+            ## 🖥️ 動作要件
+            - Windows 11 / 10 (64bit)
+            - NVIDIA GPU（VRAM **8GB以上**を推奨、CUDA 対応ドライバ）
+            - RAM 16GB 以上推奨
+            - 約 12GB の空きディスク容量（モデル・ランタイム保存用）
+
+            ## 🧠 既定モデル
+            [circlestone-labs/Anima](https://huggingface.co/circlestone-labs/Anima) を既定モデルとしています。
+
+            > ⚠️ **Anima は非商用ライセンス**です。商用利用には別途ライセンスが必要です。
+
+            ## 🔒 SHA256
+            ```
+            ${{ steps.installer.outputs.name }}
+            ${{ steps.hash.outputs.sha256 }}
+            ```
+
+            ## 📄 ライセンス
+            - アプリ本体: MIT
+            - 利用するモデル・ランタイムはそれぞれのライセンスに従います
+
+            詳細は [README](https://github.com/${{ github.repository }}/blob/main/README.md) を参照してください。
+          files: |
+            ${{ steps.installer.outputs.path }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,53 @@
+{
+  "$schema": "./runtime.schema.json",
+  "version": 1,
+  "$comment": "ランタイム（ComfyUI / llama.cpp / プロンプト変換用LLM）のダウンロード元定義。URL更新は本ファイルのみ編集。SHA256 と sizeBytes は判明時に埋める（null なら検証スキップ）。最終確認: 2026-05-26",
+  "comfyui": {
+    "id": "comfyui-portable-nvidia",
+    "displayName": "ComfyUI (Windows Portable / NVIDIA)",
+    "description": "画像生成エンジン本体。Python+PyTorch+CUDA同梱のポータブル版。",
+    "$comment": "2026年に comfyanonymous/ComfyUI から Comfy-Org/ComfyUI へ org 移管された。/latest/download/ パスは新リポジトリ側を使うこと。",
+    "url": "https://github.com/Comfy-Org/ComfyUI/releases/latest/download/ComfyUI_windows_portable_nvidia.7z",
+    "filename": "ComfyUI_windows_portable_nvidia.7z",
+    "sha256": null,
+    "sizeBytes": 2008033059,
+    "releasePage": "https://github.com/Comfy-Org/ComfyUI/releases/latest",
+    "sourceProject": "Comfy-Org/ComfyUI",
+    "saveTo": "downloads",
+    "extract": {
+      "type": "7z",
+      "extractTo": "runtime/ComfyUI_windows_portable",
+      "entryPoint": "ComfyUI/main.py"
+    }
+  },
+  "llamaServer": {
+    "id": "llama-server-windows-cpu",
+    "displayName": "llama.cpp server (Windows / CPU)",
+    "description": "日本語→英語プロンプト変換に使う小型LLM実行サーバ。CPU実行のためVRAMを消費しない。",
+    "$comment": "GitHub Release のアセット名にはビルド番号が含まれるため /latest/download/ が使えない。新版へ追従する際はこの URL とビルド番号を更新。確認: https://github.com/ggml-org/llama.cpp/releases/latest",
+    "url": "https://github.com/ggml-org/llama.cpp/releases/download/b9331/llama-b9331-bin-win-cpu-x64.zip",
+    "filename": "llama-cpu-windows.zip",
+    "sha256": null,
+    "sizeBytes": null,
+    "releasePage": "https://github.com/ggml-org/llama.cpp/releases/latest",
+    "sourceProject": "ggml-org/llama.cpp",
+    "saveTo": "downloads",
+    "extract": {
+      "type": "zip",
+      "extractTo": "runtime/llama-server",
+      "executable": "llama-server.exe"
+    }
+  },
+  "llmModel": {
+    "id": "qwen-2.5-3b-instruct-q4km",
+    "displayName": "Qwen2.5-3B-Instruct (Q4_K_M GGUF)",
+    "description": "日本語対応の小型LLM。プロンプト変換用。約2GB。",
+    "url": "https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/resolve/main/qwen2.5-3b-instruct-q4_k_m.gguf",
+    "filename": "qwen2.5-3b-instruct-q4_k_m.gguf",
+    "sha256": null,
+    "sizeBytes": null,
+    "releasePage": "https://huggingface.co/Qwen/Qwen2.5-3B-Instruct-GGUF/tree/main",
+    "sourceProject": "Qwen/Qwen2.5-3B-Instruct-GGUF",
+    "saveTo": "models/llm"
+  }
+}

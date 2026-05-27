@@ -1,0 +1,86 @@
+{
+  "id": "anima",
+  "displayName": "Anima v1.0",
+  "version": "1.0",
+  "architecture": "cosmos-predict2-2b",
+  "description": "アニメ・イラスト特化の高品質画像生成モデル。NVIDIA Cosmos-Predict2-2B-Text2Image ベース。",
+  "homepage": "https://huggingface.co/circlestone-labs/Anima",
+  "vendor": "CircleStone Labs",
+  "license": {
+    "name": "CircleStone Labs Non-Commercial License + NVIDIA Open Model License",
+    "url": "https://huggingface.co/circlestone-labs/Anima",
+    "commercialUse": false,
+    "noticeJa": "Animaは非商用ライセンスのモデルです。商用利用にはCircleStone Labsからの別途ライセンスが必要です。",
+    "noticeEn": "Anima is licensed for non-commercial use only. Commercial use requires a separate license from CircleStone Labs."
+  },
+  "$comment": "Hugging Face 上の実ファイルは split_files/<role>/<filename> 配下に配置されているため、URL に split_files/ プレフィックスが必要。確認: 2026-05-26",
+  "files": [
+    {
+      "role": "diffusion_model",
+      "filename": "anima-base-v1.0.safetensors",
+      "url": "https://huggingface.co/circlestone-labs/Anima/resolve/main/split_files/diffusion_models/anima-base-v1.0.safetensors",
+      "sha256": "TBD_FILL_AT_RUNTIME",
+      "sizeBytes": null,
+      "comfyUISubdir": "diffusion_models"
+    },
+    {
+      "role": "text_encoder",
+      "filename": "qwen_3_06b_base.safetensors",
+      "url": "https://huggingface.co/circlestone-labs/Anima/resolve/main/split_files/text_encoders/qwen_3_06b_base.safetensors",
+      "sha256": "TBD_FILL_AT_RUNTIME",
+      "sizeBytes": null,
+      "comfyUISubdir": "text_encoders"
+    },
+    {
+      "role": "vae",
+      "filename": "qwen_image_vae.safetensors",
+      "url": "https://huggingface.co/circlestone-labs/Anima/resolve/main/split_files/vae/qwen_image_vae.safetensors",
+      "sha256": "TBD_FILL_AT_RUNTIME",
+      "sizeBytes": null,
+      "comfyUISubdir": "vae"
+    }
+  ],
+  "$optionalFilesComment": "Civitai はモデルID(URL内)とバージョンID(APIダウンロード用)が別。バージョン更新で新しいIDが発行されるため、配布終了/更新時はreleasePageから最新IDを確認してurlを更新する。",
+  "optionalFiles": [
+    {
+      "role": "lora",
+      "id": "anima-turbo",
+      "displayName": "Anima Turbo LoRA (高速化)",
+      "filename": "anima_turbo_lora.safetensors",
+      "url": "https://civitai.com/api/download/models/2877687",
+      "sha256": "TBD_FILL_AT_RUNTIME",
+      "sizeBytes": 148897792,
+      "comfyUISubdir": "loras",
+      "description": "ステップ数を減らして高速生成。推奨: CFG 1, Steps 8-12。",
+      "releasePage": "https://civitai.com/models/2560840/anima-turbo-lora",
+      "sourceProject": "Civitai / anima-turbo-lora"
+    }
+  ],
+  "workflowTemplate": "anima_base.json",
+  "defaults": {
+    "width": 1024,
+    "height": 1024,
+    "steps": 30,
+    "cfg": 4.5,
+    "sampler": "euler_ancestral",
+    "scheduler": "normal",
+    "denoise": 1.0
+  },
+  "_samplerNote": "ComfyUI 公式名。A1111/Forge の 'euler_a' は 'euler_ancestral' が正式。",
+  "samplerOptions": ["euler_ancestral", "er_sde", "dpmpp_2m_sde_gpu", "dpmpp_2m", "euler"],
+  "resolutionPresets": [
+    { "name": "正方形 (1024×1024)", "width": 1024, "height": 1024 },
+    { "name": "縦長 (832×1216)", "width": 832, "height": 1216 },
+    { "name": "横長 (1216×832)", "width": 1216, "height": 832 },
+    { "name": "正方形 高解像度 (1536×1536)", "width": 1536, "height": 1536, "highVram": true }
+  ],
+  "promptFormat": {
+    "qualityPrefix": "masterpiece, best quality, score_7, safe, ",
+    "negativeDefault": "worst quality, low quality, score_1, score_2, score_3, artist name",
+    "tagOrder": ["meta", "subject", "character", "series", "artist", "general"],
+    "separator": ", "
+  },
+  "minVramGb": 6,
+  "recommendedVramGb": 8,
+  "promptTranslationProfile": "anime_tags"
+}

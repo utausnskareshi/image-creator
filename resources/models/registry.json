@@ -1,0 +1,13 @@
+{
+  "$schema": "./registry.schema.json",
+  "version": 1,
+  "comment": "ImageCreator モデルレジストリ。新規モデルを追加する場合は docs/model-extensibility.md を参照。",
+  "models": [
+    {
+      "id": "anima",
+      "descriptor": "anima.json",
+      "default": true,
+      "enabled": true
+    }
+  ]
+}

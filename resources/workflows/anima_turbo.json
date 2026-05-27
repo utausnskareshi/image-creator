@@ -1,0 +1,114 @@
+{
+  "_meta": {
+    "version": "anima-turbo-v1",
+    "note": "Anima Turbo LoRA を適用した高速生成ワークフロー。LoraLoaderModelOnly で UNET のみに LoRA を適用。推奨ステップ数: 8-12、CFG: 1.0-2.0。LoraLoaderModelOnly ノードがComfyUIに存在しない場合は更新が必要。",
+    "placeholders": [
+      "POSITIVE_PROMPT",
+      "NEGATIVE_PROMPT",
+      "WIDTH",
+      "HEIGHT",
+      "STEPS",
+      "CFG",
+      "SAMPLER",
+      "SCHEDULER",
+      "SEED",
+      "MODEL_FILE",
+      "TEXT_ENCODER_FILE",
+      "VAE_FILE",
+      "LORA_FILE",
+      "LORA_STRENGTH"
+    ]
+  },
+  "prompt": {
+    "1": {
+      "class_type": "UNETLoader",
+      "_meta": { "title": "Diffusion Model 読込" },
+      "inputs": {
+        "unet_name": "{{MODEL_FILE}}",
+        "weight_dtype": "default"
+      }
+    },
+    "2": {
+      "class_type": "CLIPLoader",
+      "_meta": { "title": "Text Encoder 読込" },
+      "inputs": {
+        "clip_name": "{{TEXT_ENCODER_FILE}}",
+        "type": "stable_diffusion",
+        "device": "default"
+      }
+    },
+    "3": {
+      "class_type": "VAELoader",
+      "_meta": { "title": "VAE 読込" },
+      "inputs": {
+        "vae_name": "{{VAE_FILE}}"
+      }
+    },
+    "4": {
+      "class_type": "CLIPTextEncode",
+      "_meta": { "title": "Positive Prompt" },
+      "inputs": {
+        "text": "{{POSITIVE_PROMPT}}",
+        "clip": ["2", 0]
+      }
+    },
+    "5": {
+      "class_type": "CLIPTextEncode",
+      "_meta": { "title": "Negative Prompt" },
+      "inputs": {
+        "text": "{{NEGATIVE_PROMPT}}",
+        "clip": ["2", 0]
+      }
+    },
+    "6": {
+      "class_type": "EmptyLatentImage",
+      "_meta": { "title": "Latent 初期化" },
+      "inputs": {
+        "width": "{{WIDTH}}",
+        "height": "{{HEIGHT}}",
+        "batch_size": 1
+      }
+    },
+    "10": {
+      "class_type": "LoraLoaderModelOnly",
+      "_meta": { "title": "Turbo LoRA 適用" },
+      "inputs": {
+        "lora_name": "{{LORA_FILE}}",
+        "strength_model": "{{LORA_STRENGTH}}",
+        "model": ["1", 0]
+      }
+    },
+    "7": {
+      "class_type": "KSampler",
+      "_meta": { "title": "サンプラー (Turbo)" },
+      "inputs": {
+        "seed": "{{SEED}}",
+        "steps": "{{STEPS}}",
+        "cfg": "{{CFG}}",
+        "sampler_name": "{{SAMPLER}}",
+        "scheduler": "{{SCHEDULER}}",
+        "denoise": 1.0,
+        "model": ["10", 0],
+        "positive": ["4", 0],
+        "negative": ["5", 0],
+        "latent_image": ["6", 0]
+      }
+    },
+    "8": {
+      "class_type": "VAEDecode",
+      "_meta": { "title": "VAE Decode" },
+      "inputs": {
+        "samples": ["7", 0],
+        "vae": ["3", 0]
+      }
+    },
+    "9": {
+      "class_type": "SaveImage",
+      "_meta": { "title": "画像保存" },
+      "inputs": {
+        "images": ["8", 0],
+        "filename_prefix": "imagecreator_turbo"
+      }
+    }
+  }
+}
